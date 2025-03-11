@@ -1,18 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zxx">
 <head>
     <!-- meta tag -->
     <meta charset="utf-8">
     <title> Eight Bit</title>
     <meta name="description" content="">
-	<meta property="og:locale" content="en_US">
-	<meta property="og:type" content="website">
-	<meta property="og:title" content="Eight Bit - Get Keys">
-	<meta property="og:description" content="Generate keys from here.">
-	<meta property="og:url" content="https://8bits4ya.github.io/8bitkeys/">
-	<meta property="og:site_name" content="Eight Bit">
-	<meta property="og:image" content="https://i.imgur.com/AIp9fgm.png">
-	<meta property="og:image:type" content="image/png">
     <!-- responsive tag -->
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -248,18 +240,81 @@
                                                     animation: bodyAnimation 2s ease-out forwards;
                                                 }
                                             </style>
-                                                    <button class="v5mint_btn btn-mid-green hov_shape_show mr-30" id="getKeyBtn">
-                                                        Get key
-                                                        <span class="hov_shape1"><img src="assets/images/icon/hov_shape_L_dark.svg" alt=""></span>
-                                                        <span class="hov_shape2"><img src="assets/images/icon/hov_shape_L_dark.svg" alt=""></span>
-                                                        <span class="square_hov_shape_dark"></span>
-                                                    </button>
-                                                    <button class="v5widhlist_btn btn-mid-transparent hov_shape_show" data-bs-toggle="modal" data-bs-target="#mintModal">
-                                                        Generate Key
-                                                        <span class="hov_shape1"><img src="assets/images/icon/hov_shape_L.svg" alt=""></span>
-                                                        <span class="hov_shape2"><img src="assets/images/icon/hov_shape_L.svg" alt=""></span>
-                                                        <span class="square_hov_shape"></span>
-                                                    </button>
+<button class="v5mint_btn btn-mid-green hov_shape_show mr-30" id="getKeyBtn" style="display:none;">
+    Get key
+    <span class="hov_shape1"><img src="assets/images/icon/hov_shape_L_dark.svg" alt=""></span>
+    <span class="hov_shape2"><img src="assets/images/icon/hov_shape_L_dark.svg" alt=""></span>
+    <span class="square_hov_shape_dark"></span>
+</button>
+
+<button class="v5widhlist_btn btn-mid-transparent hov_shape_show" data-bs-toggle="modal" data-bs-target="#mintModal" id="generateKeyBtn" style="display:none;">
+    Generate Key
+    <span class="hov_shape1"><img src="assets/images/icon/hov_shape_L.svg" alt=""></span>
+    <span class="hov_shape2"><img src="assets/images/icon/hov_shape_L.svg" alt=""></span>
+    <span class="square_hov_shape"></span>
+</button>
+
+<script>
+    async function validateToken(token) {
+        if (!token) return false;
+
+        const apiUrl = `https://work.ink/_api/v2/token/isValid/${token}`;
+
+        try {
+            const response = await fetch(apiUrl);
+            const data = await response.json();
+
+            if (data.valid === true && data.info?.expiresAfter) {
+                return true;
+            }
+        } catch (error) {
+            console.error("Error Checking Token:", error);
+        }
+        return false;
+    }
+
+    async function checkAndDisplayButtons() {
+        const params = new URLSearchParams(window.location.search);
+        const urlToken = params.get("token");
+        let savedToken = localStorage.getItem("savedToken");
+
+        let tokenToUse = null;
+
+        // Check URL token first
+        if (urlToken) {
+            const urlTokenStatus = await validateToken(urlToken);
+            if (urlTokenStatus) {
+                tokenToUse = urlToken;
+                localStorage.setItem("savedToken", tokenToUse); // Save valid URL token to localStorage
+            }
+        }
+
+        // If URL token is not valid, use the stored token
+        if (!tokenToUse && savedToken) {
+            const savedTokenStatus = await validateToken(savedToken);
+            if (savedTokenStatus) {
+                tokenToUse = savedToken; // Use saved token if valid
+            }
+        }
+
+        // Show the correct button and update text if necessary
+        if (tokenToUse) {
+            document.getElementById("generateKeyBtn").style.display = "inline-block";
+            document.getElementById("getKeyBtn").style.display = "none";
+            if (savedToken && tokenToUse === savedToken) {
+                document.getElementById("generateKeyBtn").textContent = "Use Old Working Key"; // Change text if using saved token
+            } else {
+                document.getElementById("generateKeyBtn").textContent = "Generate Key"; // Normal case if it's a new valid token
+            }
+        } else {
+            document.getElementById("generateKeyBtn").style.display = "none";
+            document.getElementById("getKeyBtn").style.display = "inline-block";
+        }
+    }
+
+    checkAndDisplayButtons();
+</script>
+
 
                                                     <script>
                                                         // Add event listener for the button
@@ -278,25 +333,7 @@
                                         <style>
                                             
                                         </style>
-                                        <script>
-                                            document.addEventListener("DOMContentLoaded", function () {
-                                                const queryString = window.location.search;
-                                                const params = new URLSearchParams(queryString);
-                                                const token = params.get("token");
 
-                                                const mintButton = document.querySelector(".v5mint_btn");
-                                                const whitelistButton = document.querySelector(".v5widhlist_btn");
-
-                                                if (token) {
-                                                    mintButton.style.display = "none"; // Hide "Mint Now" button
-                                                    whitelistButton.style.display = "block"; // Show "Whitelist Now" button
-                                                } else {
-                                                    mintButton.style.display = "block"; // Show "Mint Now" button
-                                                    whitelistButton.style.display = "none"; // Hide "Whitelist Now" button
-                                                }
-                                            });
-
-                                        </script>
                                         <ul>
                                             <li class="uppercase">Exploit with quality.</li>
                                             <li class="uppercase">Get access to all sctipr of 8BIT without ads by <span>5</span> bucks</li>
@@ -893,62 +930,96 @@
                                 </ul>
                             </div>
                             <script>
-                                async function checkToken() {
-                                    const queryString = window.location.search;
-                        
-                                    if (!queryString.includes("access") || !queryString.includes("token=")) {
-                                        document.getElementById("status").textContent = "Invalid URL";
-                                        return;
-                                    }
-                        
-                                    const params = new URLSearchParams(queryString);
-                                    const token = params.get("token");
-                        
-                                    if (!token) {
-                                        document.getElementById("status").textContent = "No Token Found";
-                                        return;
-                                    }
-                        
-                                    // Display the token in the textbox (editable)
-                                    document.getElementById("tokenBox").value = token;
-                        
+                                async function validateToken(token) {
+                                    if (!token) return false;
+                            
                                     const apiUrl = `https://work.ink/_api/v2/token/isValid/${token}`;
-                        
+                            
                                     try {
                                         const response = await fetch(apiUrl);
                                         const data = await response.json();
-                        
-                                        if (data.valid === false) {
-                                            document.getElementById("status").textContent = "Expired";
-                                        } else if (data.valid === true && data.info?.expiresAfter) {
-                                            const currentTime = Date.now();
-                                            const timeLeft = data.info.expiresAfter - currentTime;
-                        
-                                            if (timeLeft > 0) {
-                                                const seconds = Math.floor(timeLeft / 1000) % 60;
-                                                const minutes = Math.floor(timeLeft / (1000 * 60)) % 60;
-                                                const hours = Math.floor(timeLeft / (1000 * 60 * 60));
-                        
-                                                document.getElementById("status").textContent = 
-                                                    `${hours}h ${minutes}m ${seconds}s`;
-                                            } else {
-                                                document.getElementById("status").textContent = "Expired";
-                                            }
-                                        } else {
-                                            document.getElementById("status").textContent = "Invalid Token";
+                            
+                                        if (data.valid === true && data.info?.expiresAfter) {
+                                            return {
+                                                valid: true,
+                                                expiresAfter: data.info.expiresAfter
+                                            };
                                         }
                                     } catch (error) {
-                                        document.getElementById("status").textContent = "Error Checking";
+                                        console.error("Error Checking Token:", error);
+                                    }
+                                    return false;
+                                }
+                            
+                                async function checkToken() {
+                                    const params = new URLSearchParams(window.location.search);
+                                    const urlToken = params.get("token");
+                                    let savedToken = localStorage.getItem("savedToken");
+                            
+                                    // First, check if the token from the URL is valid
+                                    if (urlToken) {
+                                        const urlTokenStatus = await validateToken(urlToken);
+                                        if (urlTokenStatus.valid) {
+                                            localStorage.setItem("savedToken", urlToken);
+                                            savedToken = urlToken;
+                                        }
+                                    }
+                            
+                                    // If the URL token was invalid or no URL token, check the stored one
+                                    if (!savedToken) {
+                                        document.getElementById("status").textContent = "No Token Found";
+                                        return;
+                                    }
+                            
+                                    const savedTokenStatus = await validateToken(savedToken);
+                                    if (savedTokenStatus.valid) {
+                                        // Display the saved token in the input box
+                                        document.getElementById("tokenBox").value = savedToken;
+                            
+                                        const currentTime = Date.now();
+                                        const timeLeft = savedTokenStatus.expiresAfter - currentTime;
+                            
+                                        if (timeLeft > 0) {
+                                            const seconds = Math.floor(timeLeft / 1000) % 60;
+                                            const minutes = Math.floor(timeLeft / (1000 * 60)) % 60;
+                                            const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+                            
+                                            document.getElementById("status").textContent = `${hours}h ${minutes}m ${seconds}s`;
+                                        } else {
+                                            document.getElementById("status").textContent = "Expired";
+                                            localStorage.removeItem("savedToken"); // Remove expired token
+                                        }
+                                    } else {
+                                        document.getElementById("status").textContent = "Invalid Token";
+                                        localStorage.removeItem("savedToken"); // Remove only if invalid
                                     }
                                 }
-                        
+                            
                                 checkToken();
-                            </script>   
-                            <button class="modal_mint_btn hov_shape_show">
+                            </script>
+                            
+                            
+                            <button class="modal_mint_btn hov_shape_show" onclick="copyToken()">
                                 Copy Key
                                 <span class="hov_shape1"><img src="assets/images/icon/hov_shape_L_dark.svg" alt=""></span>
                                 <span class="hov_shape2"><img src="assets/images/icon/hov_shape_L_dark.svg" alt=""></span>
                             </button>
+                            
+                            <script>
+                                function copyToken() {
+                                    const tokenInput = document.getElementById("tokenBox");
+                                    if (tokenInput) {
+                                        navigator.clipboard.writeText(tokenInput.value)
+                                            .then(() => {
+                                                alert("Token copied to clipboard!");
+                                            })
+                                            .catch(err => {
+                                                console.error("Failed to copy token: ", err);
+                                            });
+                                    }
+                                }
+                            </script>
+                            
                             <h6>Get no ads ?</h6>
                         </div>
                         <div class="modal_bottom_shape">
